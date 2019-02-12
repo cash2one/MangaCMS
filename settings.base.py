@@ -106,7 +106,10 @@ if not ratingsSort['tokey'] in mangaFolders:
 captcha_solvers = {
 	"2captcha" : {
 		'api_key' : "<KEY GOES HERE>"
-	}
+	},
+	"anti-captcha" : {
+		'api_key' : "<KEY GOES HERE>"
+	},
 
 }
 

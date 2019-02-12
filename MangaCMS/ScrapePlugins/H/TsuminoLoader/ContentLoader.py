@@ -62,8 +62,8 @@ class ContentLoader(MangaCMS.ScrapePlugins.RetreivalBase.RetreivalBase):
 	def handle_recaptcha(self, soup, containing_page, referrer_url):
 		self.log.warning("Hit recaptcha. Attempting to solve.")
 
-		key = settings.captcha_solvers['2captcha']['api_key']
-		solver = WebRequest.TwoCaptchaSolver(api_key=key, wg=self.wg)
+		key = settings.captcha_solvers['anti-captcha']['api_key']
+		solver = WebRequest.AntiCaptchaSolver(api_key=key, wg=self.wg)
 
 		args = {
 				tag['id'] : tag['value']
