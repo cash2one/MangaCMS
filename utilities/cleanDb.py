@@ -31,6 +31,7 @@ import sqlalchemy.exc
 
 import MangaCMS.cleaner.processDownload
 import MangaCMS.ScrapePlugins.MangaScraperBase
+import MangaCMS.util.hashfile as hashfile
 
 
 class CleanerBase(MangaCMS.ScrapePlugins.MangaScraperBase.MangaScraperBase):
@@ -364,6 +365,35 @@ class CleanerBase(MangaCMS.ScrapePlugins.MangaScraperBase.MangaScraperBase):
 				if loops % 1000 == 0:
 					self.log.info("Incremental Commit!")
 					sess.commit()
+
+
+	def check_file_hashes(self):
+		self.log.info("Check file hashes!")
+		bad_items = []
+		try:
+			with self.db.session_context() as sess:
+				self.log.info("Loading file listing from db!")
+				files = sess.query(self.db.ReleaseFile).order_by(desc(self.db.ReleaseFile.id)).all()
+				self.log.info("Found %s files to scan", len(files))
+				sess.commit()
+				for have in tqdm.tqdm(files):
+					have_fqp = os.path.join(have.dirpath, have.filename)
+					if not os.path.exists(have_fqp):
+						self.log.error("File missing: %s", have_fqp)
+						bad_items.append(("missing", have.id, have_fqp))
+						continue
+
+					item_hash = hashfile.hash_file(have_fqp)
+
+					if item_hash != have.fhash:
+						self.log.error("File hash doesn't match file: %s (%s, %s)", have_fqp, item_hash, have.fhash)
+						bad_items.append(("mismatch", have.id, have_fqp))
+
+		finally:
+			with open("mismatches.json", "w") as fp:
+				json.dump(bad_items, fp, indent=4)
+			for item in bad_items:
+				self.log.info("Failed: %s", item)
 
 
 	# # STFU, abstract base class

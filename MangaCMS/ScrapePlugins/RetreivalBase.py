@@ -5,7 +5,6 @@ import zipfile
 import traceback
 import os
 import os.path
-import hashlib
 import mimetypes
 from concurrent.futures import ThreadPoolExecutor
 import magic
@@ -20,14 +19,7 @@ import nameTools as nt
 import MangaCMS.cleaner.processDownload
 import MangaCMS.ScrapePlugins.MangaScraperBase
 import MangaCMS.ScrapePlugins.ScrapeExceptions as ScrapeExceptions
-
-def hash_file(filepath):
-
-	with open(filepath, "rb") as f:
-		hash_md5 = hashlib.md5()
-		hash_md5.update(f.read())
-		fhash = hash_md5.hexdigest()
-	return fhash
+import MangaCMS.util.hashfile as hashfile
 
 def clean_filename(in_filename):
 	in_filename = in_filename.replace('.zip .zip', '.zip')
@@ -374,7 +366,7 @@ class RetreivalBase(MangaCMS.ScrapePlugins.MangaScraperBase.MangaScraperBase):
 		'''
 
 		# Round-trip via the filesystem because why not
-		fhash = hash_file(fqfilename)
+		fhash = hashfile.hash_file(fqfilename)
 
 		have = self._get_existing_file_by_hash(sess, fhash)
 
@@ -392,9 +384,12 @@ class RetreivalBase(MangaCMS.ScrapePlugins.MangaScraperBase.MangaScraperBase):
 				with open(fqfilename, "rb") as fp2:
 					fc2 = fp2.read()
 
+				fc1_h = hashfile.hash_bytes(fc1)
+				fc2_h = hashfile.hash_bytes(fc2)
 				if fc1 != fc2:
 					self.log.error("Multiple instances of a releasefile with the same md5, but different contents?")
-					self.log.error("Files: %s, %s. Row id: %s", have_fqp, fqfilename, row.id)
+					self.log.error("File 1: '%s' (%s, %s), Row id: %s", fqfilename, fhash, fc2_h, row.id)
+					self.log.error("File 2: '%s' (%s, %s).",            have_fqp, have.fhash, fc1_h)
 					raise RuntimeError("Multiple instances of a releasefile with the same md5, but different contents?")
 
 				if fqfilename == have_fqp:

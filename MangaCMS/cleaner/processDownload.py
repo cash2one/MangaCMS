@@ -10,6 +10,7 @@ import deduplicator.archChecker
 import MangaCMS.ScrapePlugins.MangaScraperBase
 import MangaCMS.cleaner.archCleaner as ac
 import UploadPlugins.Madokami.uploader as up
+import MangaCMS.util.hashfile as hashfile
 
 PHASH_DISTANCE = 4
 
@@ -47,10 +48,7 @@ class DownloadProcessor(MangaCMS.ScrapePlugins.MangaScraperBase.MangaScraperBase
 				.scalar()
 
 			if not new_row:
-				hash_md5 = hashlib.md5()
-				with open(newPath, "rb") as f:
-					hash_md5.update(f.read())
-				fhash = hash_md5.hexdigest()
+				fhash = hashfile.hash_file(newPath)
 
 				# Use an existing file row (if present), via the md5sum
 				new_row = sess.query(self.db.ReleaseFile)          \
@@ -65,7 +63,7 @@ class DownloadProcessor(MangaCMS.ScrapePlugins.MangaScraperBase.MangaScraperBase
 					self.log.warning("Existing row for hash exists, but path is not valid (%s, %s)!",
 						newItemRoot,  newItemFile)
 
-					assert(new_row.fhash == fhash)
+					assert new_row.fhash == fhash
 					# Since a appropriate row exists but the paths aren't valid, just point that
 					# row at the file on-disk.
 					new_row.dirpath  = newItemRoot
@@ -253,8 +251,27 @@ class DownloadProcessor(MangaCMS.ScrapePlugins.MangaScraperBase.MangaScraperBase
 				self.log.info("Applying tags to archive: '%s'", retTags)
 			if "deleted" in retTags:
 				self.log.warning("Item was deleted!")
+
+		self.validate_md5(archivePath)
+
 		return retTags.strip()
 
+	def validate_md5(self, archive_path):
+
+		fhash = hashfile.hash_file(archive_path)
+		itemRoot, itemFile = os.path.split(archive_path)
+
+		with self.db.session_context() as sess:
+			row = sess.query(self.db.ReleaseFile)                \
+				.filter(self.db.ReleaseFile.dirpath == itemRoot)  \
+				.filter(self.db.ReleaseFile.filename == itemFile) \
+				.scalar()
+
+			assert row.fhash == fhash, "Hashes mishmatch after fetch: '%s', '%s' (%s)" % (
+				fhash,
+				row.fhash,
+				archive_path,
+				)
 
 # Subclasses to specify the right table names
 class MangaProcessor(DownloadProcessor):

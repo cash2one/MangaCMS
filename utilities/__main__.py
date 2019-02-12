@@ -277,6 +277,10 @@ def delete_null_rows():
 	mcleaner.deleteNullRows()
 
 
+def validate_hashes():
+	mcleaner = utilities.cleanDb.MCleaner('None')
+	mcleaner.check_file_hashes()
+
 def reset_run_states():
 	MangaCMS.lib.statusManager.resetAllRunningFlags()
 
@@ -431,18 +435,14 @@ single_arg_funcs = {
 	"fix_bu_authors"          : utilities.bookClean.fixMangaUpdatesAuthors,
 	"madokami_organize"       : UploadPlugins.Madokami.uploader.do_remote_organize,
 	"madokami_upload"         : UploadPlugins.Madokami.uploader.do_missing_ul,
-	"rescan_failed_h"         : utilities.dedupDir.reprocessHFailed,
-	"h_clean"                 : utilities.dedupDir.runHDeduper,
-	"k_clean"                 : utilities.dedupDir.runKissDeduper,
-	"m_clean"                 : utilities.dedupDir.runMDeduper,
-	"clean_reset"             : utilities.dedupDir.resetDeduperScan,
-	"fix_swapped_paths"       : utilities.dedupDir.fixSwap,
 
 	"reset_b_missing"         : reset_b_missing,
 	"reset_m_missing"         : reset_m_missing,
 	"reset_h_missing"         : reset_h_missing,
 	"clear_bad_dedup"         : clear_bad_dedup,
 	"clear_bad_h_dedup"       : clear_bad_h_dedup,
+	"validate_hashes"         : validate_hashes,
+
 	"fix_batoto_urls"         : fix_batoto_urls,
 	"fix_bt_links"            : fix_bt_links,
 	"cross_sync"              : cross_sync,

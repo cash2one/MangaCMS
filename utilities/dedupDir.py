@@ -576,7 +576,6 @@ class DirDeduper(MangaCMSOld.DbBase.DbBase):
 		return True
 
 
-
 class MDirDeduper(DirDeduper):
 	loggerPath = "Main.MDirDedup"
 	tableName  = "MangaItems"
@@ -682,7 +681,7 @@ def runSingleDirDeduper(dirPath, deletePath):
 
 def reprocessHFailed():
 
-	dd = MDirDeduper()
+	dd = HDirDeduper()
 	dd.setupDbApi()
 	dd.reprocessFailedH()
 

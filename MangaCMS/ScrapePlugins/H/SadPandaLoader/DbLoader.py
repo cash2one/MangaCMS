@@ -109,6 +109,8 @@ class DbLoader(MangaCMS.ScrapePlugins.LoaderBase.LoaderBase, LoginMixin.ExLoginM
 			return False
 		if ret['series_name'].lower().startswith("artist: "):
 			return False
+		if ret['series_name'].lower().startswith("[pixiv] "):
+			return False
 
 		# If there is a torrent link, decompose it so the torrent link doesn't
 		# show up in our parsing of the content link.
@@ -127,6 +129,8 @@ class DbLoader(MangaCMS.ScrapePlugins.LoaderBase.LoaderBase, LoginMixin.ExLoginM
 		if ret['origin_name'].lower().startswith("artist galleries ::: "):
 			return False
 		if ret['origin_name'].lower().startswith("artist: "):
+			return False
+		if ret['origin_name'].lower().startswith("[pixiv] "):
 			return False
 
 		return ret

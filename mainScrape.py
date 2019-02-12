@@ -38,13 +38,13 @@ executors = {
 }
 job_defaults = {
 	'coalesce': True,
-	'max_instances': 1
+	'max_instances': 1,
+	"misfire_grace_time" : 60 * 60 * 2,
 }
 
 jobstores = {
 
 	'transient_jobstore' : MemoryJobStore(),
-	"misfire_grace_time" : 60 * 60 * 2,
 	'main_jobstore'      : SQLAlchemyJobStore(url='postgresql://{username}:{password}@{address}:5432/{dbname}'.format(
 				username = settings.NEW_DATABASE_USER,
 				password = settings.NEW_DATABASE_PASS,
